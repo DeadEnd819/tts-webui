@@ -1,0 +1,45 @@
+services:
+  tts-webui:
+    image: ghcr.io/rsxdalv/tts-generation-webui:main
+    container_name: tts-webui
+    environment:
+      - HF_TOKEN=${HF_TOKEN:-""}
+      - TZ=Europe/Bucharest
+    ports:
+      - "7770:7770"   # backend/gradio (проверь в readme образа)
+    volumes:
+      - tts_models:/app/models
+      - tts_cache:/root/.cache
+    restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+  rvc-webui:
+    image: local/rvc-webui:latest
+    container_name: rvc-webui
+    environment:
+      - HF_TOKEN=${HF_TOKEN:-""}
+      - TZ=Europe/Bucharest
+    ports:
+      - "7865:7865"
+    volumes:
+      - rvc_models:/workspace/models
+      - tts_cache:/root/.cache
+    restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+volumes:
+  tts_models:
+  rvc_models:
+  tts_cache:
